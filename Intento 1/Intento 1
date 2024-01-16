@@ -1,0 +1,105 @@
+# Creamos las matriz de transición
+labels <- c('H', 'C1', 'C2', 'B')
+byRow <- TRUE
+x <- c(1, 0, 0, 0, 0.2, 0, 0.8, 0, 0, 0.2, 0, 0.8, 0, 0, 0, 1)
+P <- matrix(data = x, byrow = byRow, nrow = 4, dimnames = list(labels, labels))
+P
+
+#Comprobamos que la suma de las probabilidades de cada una de las cuatro filas
+#es 1.
+rowSums(P)
+
+#Calculamos la suma de las probabilidades de cada una de las columnas
+colSums(P)
+
+#Llamamos a la librería markovchain para chequear primero nuestra cadena de Markov
+library(markovchain)
+mcP = new("markovchain",transitionMatrix = P)
+mcP
+
+#Comprobamos un resumen de la cadena de Markov mcP
+summary(mcP)
+plot(mcP)
+
+#Creamos programa, para ello vamos a usar la librería matrixcalc para realizar
+#las potencias de la matriz de transición mcP
+library(matrixcalc)
+mcL <- vector('list', length = 10)
+for (i in (1:10)){
+  mcPi <- matrix.power(P, i)
+  zerosum <- sum(mcPi == 0)
+  mcL[[i]] <- zerosum
+  print(mcPi)
+}
+#La lista con el número de ceros de la potencia de mcP elevado a i, siendo 
+# i=1, i=2, i=3, ..., i=10, es:
+mcL 
+
+#Podemos confirmar que la cadena de MArkov es regular ya que la cantidad de ceros
+# de mcP es constante. (cantidad de ceros = 8)
+#------------------------------------------------------------------
+#  Pregunta 5
+#---------------------------------------------------------------
+#Usando la librería markovchain, llamamos a la función canonicForm para obtener
+#la función canónica del objeto cadena de markov mcP, que es nuestra matriz de
+#transición definida anteriormente.
+mcP_canonica <- canonicForm(mcP)
+mcP_canonica
+
+#------------------------------------------------------------------
+#  Pregunta 6
+#---------------------------------------------------------------
+
+solve_equation_1 <- function(L) {
+  return(L^2 - 0.2)
+}
+
+solution_1 <- uniroot(solve_equation_1, interval = c(0, 1))
+L_1 <- solution_1$root
+L_1
+
+#Codificamos fórmula para obtener el resulto de L. Buscamos en 
+#el intervalo (0.1, 1) ya que una de los resultados posibles de la ecuación es 0
+
+solve_equation_2 <- function(M) {
+  return(2*M^2 - M)
+}
+
+solution_2 <- uniroot(solve_equation_2, interval = c(0.1, 1))
+L_2 <- solution_2$root
+L_2
+
+#------------------------------------------------------------------
+#  Pregunta 7
+#---------------------------------------------------------------
+#Calcular la probabilidad de llegar a B desde C1 
+(0.8^2)*(1/(1-0.8))*(1-0.8)
+
+#Calcular la probabilidad de llegar a H desde C1 
+(0.2)*(1/(1-0.2))*(1-0.2)
+
+
+#------------------------------------------------------------------
+#  Pregunta 8
+#---------------------------------------------------------------
+#Calculamos Sr
+library(Biodem)
+I <- c(1,0,0,1)
+i <- matrix(data = I, byrow = byRow, nrow = 2)
+d <- mcP_canonica[3:4, 3:4]
+a <- mcP_canonica[3:4, 1:2]
+s <- (i-d)
+s2 <- mtx.exp(s,-1)
+Sr <- s2%*%a
+Sr
+#Calculamos limites suficientemente grandes
+St <- c(1,0,0,0,0,1,0,0,0.2,0,0,0,0,0.8,0,0)
+st <- matrix(data = S, byrow = byRow, nrow = 4)
+st
+St_9 <- mtx.exp(st,9)
+st_100 <- mtx.exp(st,100)
+st_1000 <- mtx.exp(st,1000)
+St_9 
+st_100 
+st_1000 
+
